@@ -2,8 +2,10 @@ package org.example;
 
 import org.example.dao.ClientCrudService;
 import org.example.dao.PlanetCrudService;
+import org.example.dao.TicketCrudService;
 import org.example.entity.Client;
 import org.example.entity.Planet;
+import org.example.entity.Ticket;
 import org.example.utils.GenericValidator;
 import org.example.utils.HibernateUtils;
 import org.flywaydb.core.Flyway;
@@ -21,12 +23,12 @@ public class Main {
         flyway.migrate();
 
         try (Session session = HibernateUtils.getInstance().getSessionFactory().openSession()) {
-            ClientCrudService ccs = new ClientCrudService(session);
+            //ClientCrudService ccs = new ClientCrudService(session);
             //createClient(ccs, "John Galt4");
             //System.out.println(getClient(ccs, 11L).toString());
             //updateClient(ccs, 11L, "Updated client");
             //deleteClient(ccs, getClientById(ccs, 11L));
-            System.out.println(ccs.getAll().toString());
+            //System.out.println(ccs.getAll().toString());
 
             //PlanetCrudService pcs = new PlanetCrudService(session);
             //createPlanet(pcs, "V52D", "Pandora");
@@ -35,6 +37,12 @@ public class Main {
             //deletePlanet(pcs, getPlanetById(pcs, "V52D"));
             //System.out.println(pcs.getAll().toString());
 
+            //TicketCrudService tcs = new TicketCrudService(session);
+            //createTicket(session);
+            //System.out.println(tcs.getById(11L).toString());
+            //updateTicket(session, 12L, "B2");
+            //tcs.delete(tcs.getById(11L));
+            //System.out.println(tcs.getAll().toString());
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -105,6 +113,38 @@ public class Main {
 
     private static void deletePlanet(PlanetCrudService pcs, Planet planet) {
         pcs.delete(planet);
+    }
+
+    public static void createTicket(Session session) {
+        TicketCrudService tcs = new TicketCrudService(session);
+        ClientCrudService ccs = new ClientCrudService(session);
+        PlanetCrudService pcs = new PlanetCrudService(session);
+
+        Ticket newTicket = new Ticket();
+        newTicket.setClient(ccs.getById(1L));
+        newTicket.setFromPlanet(pcs.getById("C3"));
+        newTicket.setToPlanet(pcs.getById("A1"));
+
+        List<String> errors = new GenericValidator().validate(newTicket);
+        if (errors.isEmpty()) {
+            tcs.create(newTicket);
+        } else {
+            System.out.println(errors);
+        }
+    }
+
+    public static void updateTicket(Session session, Long id, String toPlanetId) {
+        TicketCrudService tcs = new TicketCrudService(session);
+        PlanetCrudService pcs = new PlanetCrudService(session);
+        Ticket updateTicked = tcs.getById(id);
+        updateTicked.setToPlanet(pcs.getById(toPlanetId));
+
+        List<String> errors = new GenericValidator().validate(updateTicked);
+        if (errors.isEmpty()) {
+            tcs.create(updateTicked);
+        } else {
+            System.out.println(errors);
+        }
     }
 }
 
